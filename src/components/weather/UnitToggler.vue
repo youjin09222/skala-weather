@@ -8,7 +8,13 @@ const configStore = useConfigStore()
     <span class="unit-label">
       날씨단위: <strong>{{ configStore.unit === 'celsius' ? '섭씨(℃)' : '화씨(℉)' }}</strong>
     </span>
-    <button class="toggle-btn" @click="configStore.toggleUnit">단위변경</button>
+    <el-switch
+      :model-value="configStore.unit === 'fahrenheit'"
+      @change="configStore.toggleUnit"
+      active-text="℉"
+      inactive-text="℃"
+      class="custom-switch"
+    />
   </div>
 </template>
 
@@ -35,5 +41,15 @@ const configStore = useConfigStore()
 .toggle-btn:hover {
   background: rgba(212, 175, 55, 0.15);
   color: #f4e8d1;
+}
+.custom-switch :deep(.el-switch__core) {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(212, 175, 55, 0.5);
+}
+.custom-switch.is-checked :deep(.el-switch__core) {
+  background-color: #d4af37;
+}
+.custom-switch :deep(.el-switch__label) {
+  color: #d4af37;
 }
 </style>
