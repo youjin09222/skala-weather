@@ -1,4 +1,13 @@
-@import './base.css';
+html,
+body {
+  background-color: #000;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  min-height: 100vh;
+}
 
 #app {
   max-width: 1280px;
