@@ -37,7 +37,7 @@ const showDetail = (cityName, status) => {
   <div class="mockup-wrapper">
     <!-- 검색창: 한글 입력 즉시 반영, :value + @input 명시적 사용 -->
     <section class="search-box">
-      <h3>🔮 그대의 발길이 닿을 곳을 알려주소서</h3>
+      <h3>✦ 그대의 발길이 닿을 곳을 알려주소서 ✦</h3>
       <input
         :value="searchQuery"
         @input="(e) => (searchQuery = e.target.value)"
@@ -63,7 +63,9 @@ const showDetail = (cityName, status) => {
       >
         <div class="card" :class="{ 'is-flipped': flippedCards[item.id] }">
           <!-- 카드 뒷면 (기본 상태) -->
-          <div class="card-face card-back">🔮</div>
+          <div class="card-face card-back">
+            <span class="back-symbol">✦</span>
+          </div>
 
           <!-- 카드 앞면 (클릭하면 뒤집힘) -->
           <div class="card-face card-front">
@@ -90,40 +92,62 @@ const showDetail = (cityName, status) => {
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital@0;1&family=Nanum+Myeongjo:wght@400;700&display=swap');
+
 .mockup-wrapper {
   max-width: 700px;
   margin: 0 auto;
   text-align: center;
+  padding: 30px 0;
 }
 
+/* 검색창 */
 .search-box {
-  background: #2c2418;
+  background: linear-gradient(160deg, #1a1a2e, #16213e);
   color: #e8d5a8;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  border: 1px solid #d4af37;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 0 24px rgba(120, 90, 200, 0.15);
+  font-family: 'Nanum Myeongjo', serif;
+}
+.search-box h3 {
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  letter-spacing: 2px;
+  font-size: 15px;
+  margin-bottom: 12px;
+  color: #d4af37;
 }
 .search-box input {
-  padding: 6px 10px;
-  border-radius: 4px;
-  border: 1px solid #d4af37;
-  background: #fdf6e3;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4e8d1;
+  font-family: 'Nanum Myeongjo', serif;
+  outline: none;
+  text-align: center;
+}
+.search-box input::placeholder {
+  color: rgba(232, 213, 168, 0.75);
 }
 
 .card-deck {
   display: flex;
   gap: 20px;
   justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
+  flex-wrap: nowrap;
+  margin-bottom: 24px;
 }
 
 /* 카드 3D 뒤집기 애니메이션 구조 */
 .card-scene {
-  width: 160px;
-  height: 230px;
-  perspective: 1000px; /* 원근감 설정 */
+  width: 170px;
+  max-width: 30%;
+  aspect-ratio: 170 / 240;
+  perspective: 1200px;
   cursor: pointer;
 }
 .card {
@@ -131,73 +155,145 @@ const showDetail = (cityName, status) => {
   height: 100%;
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+  /* 탄성 있는 easing(cubic-bezier) -> 튕기듯 뒤집기 */
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .card.is-flipped {
-  transform: rotateY(180deg);
+  /* 회전과 동시에 살짝 커지게 -> 카드가 들렸다가 놓이는 느낌 */
+  transform: rotateY(180deg) scale(1.06);
 }
+
+/* 뒤집히는 순간 카드 전체 반짝임 효과 */
+.card-scene:has(.is-flipped) {
+  animation: flip-glow 0.5s ease;
+}
+
+@keyframes flip-glow {
+  0% {
+    filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
+  }
+  50% {
+    filter: drop-shadow(0 0 22px rgba(212, 175, 55, 0.85));
+  }
+  100% {
+    filter: drop-shadow(0 0 0 rgba(212, 175, 55, 0));
+  }
+}
+
+/* 마우스를 올리면 카드가 살짝 떠오르는 효과 */
+.card-scene:hover .card:not(.is-flipped) {
+  transform: translateY(-6px);
+}
+
 .card-face {
   position: absolute;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden; /* 뒷면이 비치지 않도록 처리 */
-  border-radius: 10px;
+  backface-visibility: hidden;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px;
+  padding: 12px;
   box-sizing: border-box;
 }
+
+/* 카드 뒷면 */
 .card-back {
-  background: radial-gradient(circle, #4b3a1a, #2c2418);
-  border: 2px solid #d4af37;
-  color: #d4af37;
+  background: radial-gradient(circle at 50% 40%, #2c2a4a 0%, #12101f 80%);
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  box-shadow:
+    inset 0 0 30px rgba(120, 90, 200, 0.25),
+    0 0 20px rgba(0, 0, 0, 0.5);
+}
+.back-symbol {
   font-size: 40px;
-}
-.card-front {
-  background: linear-gradient(160deg, #fdf6e3, #f0e4c0);
-  border: 2px solid #d4af37;
-  transform: rotateY(180deg); /* 미리 뒤집어놔야 최종적으로 정방향으로 보임 */
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-.card-icon {
-  font-size: 32px;
-}
-.temp {
-  font-size: 18px;
-  font-weight: bold;
-  margin: 4px 0;
-}
-.badge {
-  display: inline-block;
-  padding: 3px 8px;
-  font-size: 11px;
-  border-radius: 4px;
-  color: white;
-  margin-bottom: 6px;
-}
-.hot {
-  background-color: #b03a2e;
-}
-.cool {
-  background-color: #2e5c8a;
-}
-.btn-detail {
-  padding: 4px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  border: 1px solid #d4af37;
-  background: #fdf6e3;
-  border-radius: 4px;
+  color: #d4af37;
+  text-shadow: 0 0 14px rgba(212, 175, 55, 0.7);
 }
 
+/* 카드 앞면 */
+.card-front {
+  background: radial-gradient(circle at 30% 20%, #fdf6e3 0%, #ecd9a8 100%);
+  border: 1px solid #b8934a;
+  transform: rotateY(180deg);
+  text-align: center;
+  box-shadow:
+    inset 0 0 20px rgba(184, 147, 74, 0.25),
+    0 0 24px rgba(212, 175, 55, 0.35);
+  color: #2c2418;
+}
+.card-icon {
+  font-size: 30px;
+  margin-bottom: 4px;
+}
+.card-front h4 {
+  font-family: 'Nanum Myeongjo', serif;
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 1px;
+  margin: 4px 0;
+  color: #4a3520;
+}
+.temp {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-style: italic;
+  font-weight: 500;
+  margin: 6px 0;
+  color: #6b4d2e;
+}
+
+/* 배지 */
+.badge {
+  display: inline-block;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-family: 'Nanum Myeongjo', serif;
+  font-weight: 400;
+  border-radius: 20px;
+  margin: 6px 0;
+  color: #fdf6e3;
+  letter-spacing: 0.5px;
+}
+.hot {
+  background: linear-gradient(90deg, #7a2f2f, #b0473f);
+  box-shadow: 0 0 10px rgba(176, 71, 63, 0.5);
+}
+.cool {
+  background: linear-gradient(90deg, #2f4d7a, #3f74b0);
+  box-shadow: 0 0 10px rgba(63, 116, 176, 0.5);
+}
+
+.btn-detail {
+  margin-top: 10px;
+  padding: 5px 16px;
+  font-size: 12px;
+  font-family: 'Nanum Myeongjo', serif;
+  cursor: pointer;
+  border: 1px solid #b8934a;
+  background: transparent;
+  color: #6b4d2e;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+.btn-detail:hover {
+  background: #b8934a;
+  color: #fdf6e3;
+}
+
+/* 상태바 */
 .status-bar {
-  background: #2c2418;
+  background: linear-gradient(160deg, #1a1a2e, #16213e);
   color: #d4af37;
-  padding: 10px;
-  border-radius: 6px;
-  font-weight: bold;
+  padding: 12px;
+  border-radius: 10px;
+  font-family: 'Nanum Myeongjo', serif;
+  font-style: italic;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 </style>
