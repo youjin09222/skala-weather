@@ -1,4 +1,6 @@
-<script setup></script>
+<script setup>
+import UnitToggler from './components/weather/UnitToggler.vue'
+</script>
 
 <template>
   <div class="app-shell">
@@ -6,6 +8,7 @@
       <RouterLink to="/" class="nav-item">🌙 날씨 점성술</RouterLink>
       <span class="divider">|</span>
       <RouterLink to="/about" class="nav-item">✨ 점성술 가이드</RouterLink>
+      <UnitToggler />
     </nav>
     <main>
       <RouterView />

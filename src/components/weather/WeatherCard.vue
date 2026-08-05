@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useConfigStore } from '@/stores/configStore'
 
 // 부모로부터 도시 하나의 정보를 props로 전달받음
-defineProps({
+const props = defineProps({
   cityItem: {
     type: Object,
     required: true,
@@ -11,6 +12,17 @@ defineProps({
 
 // 카드 선택, 상세보기 클릭 -> 두 이벤트를 부모에게 전달
 const emit = defineEmits(['select-card', 'click-detail'])
+
+const configStore = useConfigStore()
+
+// 스토어의 단위 설정에 맞춰 표시할 온도를 계산 - 원본 데이터는 항상 섭씨로 유지
+const displayTemp = computed(() => {
+  const rawTemp = props.cityItem.temp
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32)
+  }
+  return rawTemp
+})
 
 // 카드 뒤집힘 여부 -> 컴포넌트 자체 로컬 상태로 관리
 const isFlipped = ref(false)
@@ -35,7 +47,7 @@ const cardIcon = (status) => {
       <div class="card-face card-front">
         <div class="card-icon">{{ cardIcon(cityItem.status) }}</div>
         <h4>{{ cityItem.name }}</h4>
-        <p class="temp">{{ cityItem.temp }}°C</p>
+        <p class="temp">{{ displayTemp }}{{ configStore.unitSymbol }}</p>
         <span v-if="cityItem.temp >= 25" class="badge hot">🔥 더움 (25도 이상)</span>
         <span v-else class="badge cool">❄️ 선선함 (25도 미만)</span>
         <button
