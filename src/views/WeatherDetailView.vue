@@ -2,46 +2,79 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useConfigStore } from '@/stores/configStore'
+import { fetchWeatherByCity } from '../services/weatherApi.js'
+import { resolveCityQuery } from '../utils/cityNameMap.js'
 
 const route = useRoute()
 const router = useRouter()
 const configStore = useConfigStore()
 
-// 상세 페이지용 임시(mock) 데이터
-const cityDetailMockData = {
-  city_01: {
-    name: '대한민국 서울특별시',
-    temp: 28,
-    status: '맑음',
-    humidity: '55%',
-    wind: '2.5m/s',
-    advice: '태양 카드가 나왔습니다. 활기찬 에너지가 가득한 최고의 하루가 시작됩니다.',
-  },
-  city_02: {
-    name: '경기도 수원시 영통구',
-    temp: 24,
-    status: '비',
-    humidity: '85%',
-    wind: '4.1m/s',
-    advice: '비 카드가 나왔습니다. 차분한 실내에서 사색을 즐기기에 안성맞춤인 날입니다.',
-  },
-  city_03: {
-    name: '부산광역시 해운대구',
-    temp: 26,
-    status: '구름',
-    humidity: '65%',
-    wind: '5.0m/s',
-    advice: '구름 카드가 나왔습니다. 변화무쌍한 흐름 속에 작은 여유를 가져보세요.',
-  },
+const selectedCityDetail = ref(null)
+const isLoading = ref(true)
+const hasError = ref(false)
+
+// 날씨 상태를 이모지로 변환 (WeatherCard.vue와 동일한 매핑 로직)
+function weatherIcon(status) {
+  if (status.includes('맑')) return '☀️'
+  if (status.includes('비')) return '🌧️'
+  if (status.includes('눈')) return '❄️'
+  if (status.includes('구름')) return '☁️'
+  return '🌫️'
 }
 
-const selectedCityDetail = ref(null)
+// 날씨 상태 문구에 맞춰 타로풍 운세 문구를 동적으로 생성
+function generateAdvice(status) {
+  if (status.includes('맑')) {
+    return {
+      title: '태양 카드가 나왔습니다.',
+      body: '활기찬 에너지가 가득한 최고의 하루가 시작됩니다.',
+    }
+  }
+  if (status.includes('비')) {
+    return {
+      title: '비 카드가 나왔습니다.',
+      body: '차분한 실내에서 사색을 즐기기에 안성맞춤인 날입니다.',
+    }
+  }
+  if (status.includes('눈')) {
+    return { title: '눈 카드가 나왔습니다.', body: '고요한 순백의 기운이 마음을 정화시켜 줍니다.' }
+  }
+  if (status.includes('구름')) {
+    return {
+      title: '구름 카드가 나왔습니다.',
+      body: '변화무쌍한 흐름 속에 작은 여유를 가져보세요.',
+    }
+  }
+  return {
+    title: '안개 카드가 나왔습니다.',
+    body: '불확실함 속에서도 한 걸음씩 나아가는 지혜가 필요한 날입니다.',
+  }
+}
 
-// 컴포넌트가 화면에 붙는 시점에 라우터 파라미터 확인해서 데이터 조회
-onMounted(() => {
+// 컴포넌트가 화면에 붙는 시점에 라우터 파라미터(도시명)로 실제 API 조회
+onMounted(async () => {
   const cityId = route.params.cityId
-  if (cityDetailMockData[cityId]) {
-    selectedCityDetail.value = cityDetailMockData[cityId]
+  try {
+    isLoading.value = true
+    hasError.value = false
+
+    const query = resolveCityQuery(cityId)
+    const data = await fetchWeatherByCity(query)
+
+    selectedCityDetail.value = {
+      name: `${data.resolvedNameKo}, ${data.resolvedCountry}`,
+      temp: Math.round(data.main.temp),
+      status: data.weather[0].description,
+      humidity: `${data.main.humidity}%`,
+      wind: `${data.wind.speed}m/s`,
+      advice: generateAdvice(data.weather[0].description),
+    }
+  } catch (error) {
+    console.error('🔴 상세 정보 조회 실패:', error)
+    selectedCityDetail.value = null
+    hasError.value = true
+  } finally {
+    isLoading.value = false
   }
 })
 
@@ -61,19 +94,27 @@ const displayTemp = computed(() => {
     <div class="detail-card">
       <h3>✦ 오픈된 운명의 카드 ✦</h3>
 
-      <div v-if="selectedCityDetail" class="tarot-card-frame">
+      <!-- 로딩 상태 -->
+      <div v-if="isLoading" class="error-body">
+        <p class="error-message">🔮 카드를 확인하는 중입니다...</p>
+      </div>
+
+      <!-- 정상 데이터 -->
+      <div v-else-if="selectedCityDetail" class="tarot-card-frame">
         <span class="card-badge">CLIMA ORACLE</span>
+        <div class="weather-icon">{{ weatherIcon(selectedCityDetail.status) }}</div>
         <h4>{{ selectedCityDetail.name }}</h4>
         <p class="temp">{{ displayTemp }}{{ configStore.unitSymbol }}</p>
         <div class="divider"></div>
-        <p><strong>카드 속성:</strong> {{ selectedCityDetail.status }}</p>
         <p>대기 습도: {{ selectedCityDetail.humidity }}</p>
         <p>현재 풍속: {{ selectedCityDetail.wind }}</p>
         <div class="advice-box">
-          <p>🔮 "{{ selectedCityDetail.advice }}"</p>
+          <p class="advice-title">🔮 {{ selectedCityDetail.advice.title }}</p>
+          <p class="advice-body">"{{ selectedCityDetail.advice.body }}"</p>
         </div>
       </div>
 
+      <!-- 에러/실패 상태 -->
       <div v-else class="error-body">
         <p class="error-message">해당 카드는 존재하지 않습니다. 패를 다시 확인해 주세요.</p>
       </div>
@@ -167,10 +208,20 @@ const displayTemp = computed(() => {
   border-left: 3px solid #b8934a;
 }
 
-.advice-box p {
+.advice-title {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 13px;
+  color: #3a2e22;
+  margin: 0 0 6px 0;
+}
+.advice-body {
   font-style: italic;
   font-size: 13px;
   color: #3a2e22;
+  word-break: keep-all;
+  line-height: 1.6;
+  margin: 0;
 }
 
 .error-body {
@@ -199,5 +250,10 @@ const displayTemp = computed(() => {
 .btn-detail:hover {
   background: rgba(212, 175, 55, 0.15);
   color: #f4e8d1;
+}
+
+.weather-icon {
+  font-size: 50px;
+  margin: 8px 0 4px;
 }
 </style>

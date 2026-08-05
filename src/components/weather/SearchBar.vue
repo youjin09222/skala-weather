@@ -13,7 +13,7 @@ defineEmits(['update-query'])
 
 <template>
   <div class="search-inner">
-    <h3>✦ 운명의 도시를 입력하소서 ✦</h3>
+    <h3>✦ 오늘 발길이 닿을 여행지의 날씨를 확인해 보세요. ✦</h3>
     <el-input
       :model-value="currentQuery"
       @update:model-value="$emit('update-query', $event)"
@@ -22,7 +22,7 @@ defineEmits(['update-query'])
       class="custom-search-input"
     />
     <p>
-      검색 중인 도시: <strong>{{ currentQuery }}</strong>
+      지금 찾고 있는 여행지: <strong>{{ currentQuery }}</strong>
     </p>
   </div>
 </template>
