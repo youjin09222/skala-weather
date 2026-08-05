@@ -5,7 +5,9 @@ import UnitToggler from './components/weather/UnitToggler.vue'
 <template>
   <div class="app-shell">
     <nav class="navigation-bar">
-      <RouterLink to="/" class="nav-item">🌙 날씨 점성술</RouterLink>
+      <RouterLink to="/" class="nav-item">🌙 전국 날씨</RouterLink>
+      <span class="divider">|</span>
+      <RouterLink to="/world" class="nav-item">🌍 세계 날씨</RouterLink>
       <span class="divider">|</span>
       <RouterLink to="/about" class="nav-item">✨ 점성술 가이드</RouterLink>
       <UnitToggler />
@@ -29,6 +31,7 @@ import UnitToggler from './components/weather/UnitToggler.vue'
   padding: 16px;
   background: linear-gradient(160deg, #1a1a2e, #16213e);
   border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  flex-wrap: wrap;
 }
 .nav-item {
   font-family: 'Cinzel', serif;

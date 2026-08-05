@@ -8,6 +8,11 @@ const routes = [
     component: () => import('../views/WeatherHomeView.vue'),
   },
   {
+    path: '/world',
+    name: 'WeatherWorld',
+    component: () => import('../views/WorldWeatherView.vue'),
+  },
+  {
     path: '/about',
     name: 'WeatherAbout',
     component: () => import('../views/WeatherAboutView.vue'),
