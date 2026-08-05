@@ -1,9 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useConfigStore } from '@/stores/configStore'
 
 const route = useRoute()
 const router = useRouter()
+const configStore = useConfigStore()
 
 // 상세 페이지용 임시(mock) 데이터
 const cityDetailMockData = {
@@ -42,6 +44,16 @@ onMounted(() => {
     selectedCityDetail.value = cityDetailMockData[cityId]
   }
 })
+
+// 메인 화면과 동일한 방식으로 단위 변환 적용
+const displayTemp = computed(() => {
+  if (!selectedCityDetail.value) return 0
+  const rawTemp = selectedCityDetail.value.temp
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32)
+  }
+  return rawTemp
+})
 </script>
 
 <template>
@@ -52,7 +64,7 @@ onMounted(() => {
       <div v-if="selectedCityDetail" class="tarot-card-frame">
         <span class="card-badge">CLIMA ORACLE</span>
         <h4>{{ selectedCityDetail.name }}</h4>
-        <p class="temp">{{ selectedCityDetail.temp }}°C</p>
+        <p class="temp">{{ displayTemp }}{{ configStore.unitSymbol }}</p>
         <div class="divider"></div>
         <p><strong>카드 속성:</strong> {{ selectedCityDetail.status }}</p>
         <p>대기 습도: {{ selectedCityDetail.humidity }}</p>
