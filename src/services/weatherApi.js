@@ -4,9 +4,8 @@ const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
 const BASE_URL = 'https://api.openweathermap.org/data/2.5/weather'
 const GEO_URL = 'https://api.openweathermap.org/geo/1.0/direct'
 
-// 도시 이름으로 위경도 조회 후, 좌표로 날씨 조회
+// 도시 이름으로 위경도 조회 후, 좌표로 날씨 조회 (검색 기능에서 사용)
 export async function fetchWeatherByCity(cityNameEn) {
-  // 지오코딩으로 좌표 얻기
   const geoResponse = await axios.get(GEO_URL, {
     params: {
       q: cityNameEn,
@@ -19,14 +18,11 @@ export async function fetchWeatherByCity(cityNameEn) {
     throw new Error(`"${cityNameEn}" 지역을 찾을 수 없습니다.`)
   }
 
-  // 구조분해 할당(Destructuring) -> 필요한 필드만 바로 꺼내 씀
   const { lat, lon, name, country, local_names } = geoResponse.data[0]
 
-  // 옵셔널 체이닝(?.) -> local_names가 없거나 ko 속성이 없어도 에러 없이 안전하게 처리
   const resolvedNameKo = local_names?.ko || name
   const resolvedNameEn = name
 
-  // 좌표로 날씨 조회
   const response = await axios.get(BASE_URL, {
     params: {
       lat,
@@ -37,7 +33,6 @@ export async function fetchWeatherByCity(cityNameEn) {
     },
   })
 
-  // 전개 연산자(...) -> 기존 응답 데이터에 새 필드들 합쳐서 반환
   return {
     ...response.data,
     resolvedNameKo,
@@ -46,7 +41,29 @@ export async function fetchWeatherByCity(cityNameEn) {
   }
 }
 
+// 좌표를 이미 알고 있을 때 곧장 날씨만 조회 (지오코딩 단계 생략 -> 응답 속도 개선)
+// 홈 화면처럼 정해진 후보 도시 목록을 반복 조회하는 곳에서 사용
+export async function fetchWeatherByCoords(lat, lon) {
+  const response = await axios.get(BASE_URL, {
+    params: {
+      lat,
+      lon,
+      appid: API_KEY,
+      units: 'metric',
+      lang: 'kr',
+    },
+  })
+  return response.data
+}
+
+// 여러 도시를 한 번에 병렬로 조회 (검색 기능에서 사용, 지오코딩 포함)
 export async function fetchWeatherForCities(cityList) {
   const requests = cityList.map((city) => fetchWeatherByCity(city.nameEn))
+  return Promise.all(requests)
+}
+
+// 좌표 목록을 병렬로 조회 (홈 화면 후보 도시처럼 좌표를 이미 아는 경우)
+export async function fetchWeatherForCoordsList(cityList) {
+  const requests = cityList.map((city) => fetchWeatherByCoords(city.lat, city.lon))
   return Promise.all(requests)
 }
