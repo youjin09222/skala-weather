@@ -24,12 +24,12 @@ const hasError = ref(false)
 const searchQuery = ref('')
 const selectedCityInfo = ref('✨ 카드를 뒤집거나, 오늘의 발길이 머무를 곳의 날씨를 찾아보세요.')
 
-// 전국 실시간 검색 결과 (검색 안 했을 땐 null -> 기본 3개 도시 표시)
+// 전국 실시간 검색 결과
 const searchResult = ref(null)
 const isSearching = ref(false)
 const searchError = ref(false)
 
-// 화면에 실제로 그릴 목록: 검색 결과가 있으면 그것만, 없으면 기본 필터링된 목록
+// 카드 목록: 검색 결과가 있으면 그것만, 없으면 기본 필터링된 목록
 const displayList = computed(() => {
   if (searchResult.value) return [searchResult.value]
   const query = searchQuery.value.trim()
@@ -46,19 +46,18 @@ watchEffect((onCleanup) => {
 
   const keyword = searchQuery.value.trim()
 
-  // 검색어가 비었으면 바로 초기화하고 API 호출 안 함
-  if (!keyword) {
+  // 검색어가 비었거나 너무 짧으면 API 호출 안 함
+  if (!keyword || keyword.length < 2) {
     searchResult.value = null
     searchError.value = false
     return
   }
 
-  // 타이핑이 멈추고 400ms 후에 자동 검색 실행
+  // 타이핑이 멈추고 500ms 후에 자동 검색 실행
   const timer = setTimeout(() => {
     handleSearch()
-  }, 400)
+  }, 500)
 
-  // searchQuery가 다시 바뀌거나 컴포넌트가 사라지면 이전 타이머 취소
   onCleanup(() => clearTimeout(timer))
 })
 
@@ -99,7 +98,7 @@ const handleSearch = async () => {
   // 먼저 기본 3개 도시 안에 있는지 확인 -> 있으면 굳이 API 재조회하지 않고 로컬에서 바로 보여줌
   const localMatch = weatherList.value.find((item) => item.name.includes(keyword))
   if (localMatch) {
-    searchResult.value = null // displayList가 알아서 로컬 필터링 결과를 보여주게 둠
+    searchResult.value = null
     return
   }
 
@@ -110,7 +109,7 @@ const handleSearch = async () => {
     const data = await fetchWeatherByCity(query)
     searchResult.value = {
       id: `search_${Date.now()}`,
-      name: keyword,
+      name: `${data.resolvedNameKo}, ${data.resolvedCountry}`,
       temp: Math.round(data.main.temp),
       status: data.weather[0].description,
     }
@@ -141,7 +140,10 @@ const handleQueryUpdate = (val) => {
 
     <BaseDashboardCard>
       <!-- 로딩 상태 처리 -->
-      <p v-if="isLoading" class="status-message">🔮 하늘의 기운을 읽는 중입니다...</p>
+      <div v-if="isLoading" class="skeleton-wrapper">
+        <el-skeleton :rows="3" animated style="max-width: 500px; margin: 0 auto" />
+        <p class="status-message">🔮 하늘의 기운을 읽는 중입니다...</p>
+      </div>
 
       <!-- 에러 상태 처리 -->
       <p v-else-if="hasError" class="status-message error">
@@ -166,7 +168,7 @@ const handleQueryUpdate = (val) => {
           @click-detail="goToDetail(item.id)"
         />
         <p v-if="displayList.length === 0" class="no-result">
-          😭 운명의 지도에서 해당 지역을 찾을 수 없습니다.
+          ⚠️ 운명의 지도에서 해당 지역을 찾을 수 없습니다.
         </p>
       </div>
     </BaseDashboardCard>
@@ -231,5 +233,8 @@ const handleQueryUpdate = (val) => {
   font-size: 15px;
   letter-spacing: 0.5px;
   border: 1px solid rgba(212, 175, 55, 0.3);
+}
+.skeleton-wrapper :deep(.el-skeleton__item) {
+  background: rgba(212, 175, 55, 0.15);
 }
 </style>

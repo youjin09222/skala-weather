@@ -23,7 +23,7 @@ const handleSearch = async (keyword) => {
     // 지오코딩이 실제로 인식한 지명 표시
     searchResult.value = {
       id: `world_${Date.now()}`,
-      name: `${data.resolvedName}, ${data.resolvedCountry}`,
+      name: `${data.resolvedNameEn}, ${data.resolvedCountry}`,
       temp: Math.round(data.main.temp),
       status: data.weather[0].description,
     }
@@ -60,6 +60,7 @@ watchEffect((onCleanup) => {
           v-model="searchInput"
           type="text"
           placeholder="영문 도시명 입력 (예: Tokyo, Paris)"
+          autocomplete="off"
         />
       </div>
 
