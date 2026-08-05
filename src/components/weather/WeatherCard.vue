@@ -33,8 +33,11 @@ const handleCardClick = (cityName) => {
 }
 
 const cardIcon = (status) => {
-  const iconMap = { 맑음: '☀️', 비: '🌧️', 구름: '☁️' }
-  return iconMap[status] || '🌫️'
+  if (status.includes('맑')) return '☀️'
+  if (status.includes('비')) return '🌧️'
+  if (status.includes('눈')) return '❄️'
+  if (status.includes('구름')) return '☁️'
+  return '🌫️'
 }
 </script>
 
