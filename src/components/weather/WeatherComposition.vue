@@ -45,7 +45,7 @@ const showDetail = (cityName, status) => {
 <template>
   <div class="mockup-wrapper">
     <section class="search-box">
-      <h3>✦ 운명의 도시를 입력하소서 ✦</h3>
+      <h3>✦ ✨ 카드를 뒤집거나, 오늘의 발길이 머무를 곳의 날씨를 찾아보세요. ✦</h3>
       <input
         :value="searchQuery"
         @input="(e) => (searchQuery = e.target.value)"
