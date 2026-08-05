@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, watchEffect } from 'vue'
 
-// 반응형 상태 3종 - 1일차(Mockup)와 동일한 데이터
+// 반응형 상태 3종
 const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
   { id: 'city_02', name: '수원', temp: 24, status: '비' },
@@ -11,21 +11,19 @@ const searchQuery = ref('')
 const selectedCityInfo = ref('카드를 클릭하거나 검색해 보세요.')
 
 // computed: 검색어가 도시 이름에 포함된 항목만 걸러서 새 배열 반환
-// weatherList나 searchQuery가 바뀔 때마다 자동으로 다시 계산됨
+// weatherList나 searchQuery가 바뀔 때마다 자동으로 다시 계산
 const filteredWeatherList = computed(() => {
   const query = searchQuery.value.trim()
   if (!query) return weatherList.value
   return weatherList.value.filter((item) => item.name.includes(query))
 })
 
-// watch: selectedCityInfo "값이 실제로 바뀔 때"만 반응해서 콘솔로그 기록
-// (상태바 문구가 바뀌는 순간을 감시하는 용도)
+// selectedCityInfo : "값이 실제로 바뀔 때"만 반응 -> 콘솔로그 기록
 watch(selectedCityInfo, (newInfo) => {
   console.log('👁️ [watch 감지] 상태바 문구 변경 ->', newInfo)
 })
 
-// watchEffect: 내부에서 참조하는 반응형 값(searchQuery)이 바뀔 때마다 즉시 재실행
-// watch와 달리 감시 대상을 따로 지정 안 해도, 함수 안에서 쓰는 값을 자동으로 추적함
+// watchEffect: searchQuery가 바뀔 때마다 즉시 재실행
 watchEffect(() => {
   console.log('🤖 [watchEffect 자동 호출] 현재 검색어 ->', searchQuery.value)
 })
@@ -59,7 +57,7 @@ const showDetail = (cityName, status) => {
     </section>
 
     <section class="card-deck">
-      <!-- filteredWeatherList로 렌더링 대상이 바뀜 (원본 weatherList 대신) -->
+      <!-- filteredWeatherList로 렌더링 대상이 바뀜 -->
       <div
         v-for="item in filteredWeatherList"
         :key="item.id"
@@ -88,7 +86,7 @@ const showDetail = (cityName, status) => {
         </div>
       </div>
 
-      <!-- 검색 결과 3단계 분기 중 "불일치" 케이스 -->
+      <!-- 검색 결과 3단계 중 "불일치" 케이스 -->
       <p v-if="filteredWeatherList.length === 0" class="no-result">
         😭 검색 결과와 일치하는 도시가 없습니다.
       </p>
@@ -99,7 +97,7 @@ const showDetail = (cityName, status) => {
 </template>
 
 <style scoped>
-/* 1단계와 동일한 스타일 그대로 재사용 (밤하늘 톤 + 레트로 타로 디자인) */
+/* 스타일 그대로 재사용 */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Cormorant+Garamond:ital@0;1&family=Nanum+Myeongjo:wght@400;700&display=swap');
 
 .mockup-wrapper {
