@@ -19,8 +19,10 @@ export async function fetchWeatherByCity(cityNameEn) {
     throw new Error(`"${cityNameEn}" 지역을 찾을 수 없습니다.`)
   }
 
+  // 구조분해 할당(Destructuring) -> 필요한 필드만 바로 꺼내 씀
   const { lat, lon, name, country, local_names } = geoResponse.data[0]
-  // 한글/영문 지명 둘 다 준비
+
+  // 옵셔널 체이닝(?.) -> local_names가 없거나 ko 속성이 없어도 에러 없이 안전하게 처리
   const resolvedNameKo = local_names?.ko || name
   const resolvedNameEn = name
 
@@ -35,6 +37,7 @@ export async function fetchWeatherByCity(cityNameEn) {
     },
   })
 
+  // 전개 연산자(...) -> 기존 응답 데이터에 새 필드들 합쳐서 반환
   return {
     ...response.data,
     resolvedNameKo,
